@@ -79,7 +79,7 @@ class LLMClient:
 
         from datetime import datetime
 
-        self.messages.append(
+        self._append_message(
             {
                 "role": "user",
                 "content": user_message,
@@ -117,18 +117,23 @@ class LLMClient:
                             if callback:
                                 callback(chunk_content)
 
-            msg = {
-                "role": "assistant",
-                "content": full_reply,
-                "timestamp": datetime.now().isoformat(),
-            }
-            self.messages.append(msg)
-            self._save_message(msg)
+            self._append_message(
+                {
+                    "role": "assistant",
+                    "content": full_reply,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
             return full_reply
         except AuthenticationError:
             return "⚠️ Invalid API key"
         except Exception as e:
             return f"⚠️ Error: {str(e)}"
+
+    def _append_message(self, message: dict):
+        """Append a message to the chat history."""
+        self.messages.append(message)
+        self._save_message(message)
 
     def _save_message(self, message: dict):
         """Save chat history to file as JSONL (one message per line)."""
