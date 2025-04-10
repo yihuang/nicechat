@@ -1,6 +1,7 @@
 """NiceChat application module - contains the main chat UI implementation."""
 
 import argparse
+from datetime import datetime
 
 from nicegui import ui
 
@@ -8,14 +9,47 @@ from . import markdown_ext
 from .llm import LLMClient
 
 
-def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
+def chat_ui(api_key: str = None, model: str = "deepseek-chat", history_file: str = "chat_history.json"):
     """Create a simple LLM chat interface.
 
     Args:
         api_key: OpenAI API key (optional)
         model: OpenAI model to use (default: gpt-3.5-turbo)
+        history_file: File to store chat history (default: chat_history.json)
     """
-    llm_client = LLMClient(api_key=api_key, model=model)
+    llm_client = LLMClient(api_key=api_key, model=model, history_file=history_file)
+
+    chat_container = ui.column().classes("w-full")
+
+    def render_message(role: str, content: str, timestamp: str = None):
+        """Render a message in the chat UI."""
+        nonlocal chat_container
+        with chat_container:
+            alignment = "justify-end" if role == "user" else "justify-start"
+            bg_color = "bg-blue-100" if role == "user" else "bg-gray-100"
+            sender = "You" if role == "user" else "AI"
+            
+            with ui.row().classes(f"w-full {alignment} mb-2"):
+                with ui.column().classes(f"{bg_color} rounded-lg p-3 max-w-[80%]"):
+                    with ui.row().classes("items-center justify-between gap-4"):
+                        ui.label(sender).classes("text-xs text-gray-500")
+                        if timestamp:
+                            from datetime import datetime
+                            dt = datetime.fromisoformat(timestamp)
+                            ui.label(dt.strftime("%H:%M")).classes("text-xs text-gray-500")
+                    ui.markdown(
+                        content,
+                        extras=[
+                            "latex2",
+                            "fenced-code-blocks",
+                            "tables",
+                            "wavedrom",
+                        ],
+                    ).classes("text-wrap")
+
+    # Load and display existing chat history
+    for message in llm_client.messages:
+        render_message(message["role"], message["content"], message.get("timestamp"))
 
     async def send_message():
         if not input.value.strip():
@@ -25,11 +59,8 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
         input.value = ""
 
         with chat_container:
-            # Show user message with custom styling
-            with ui.row().classes("w-full justify-end mb-2"):
-                with ui.column().classes("bg-blue-100 rounded-lg p-3 max-w-[80%]"):
-                    ui.label("You").classes("text-xs text-gray-500")
-                    ui.label(user_message).classes("text-wrap")
+            # Show user message
+            render_message("user", user_message, datetime.now().isoformat())
 
             # Show loading indicator with custom styling
             with ui.row().classes("w-full justify-start mb-2"):
@@ -64,7 +95,6 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             )
 
     with ui.column().classes("w-full max-w-2xl mx-auto"):
-        chat_container = ui.column().classes("w-full")
         with ui.row().classes("w-full"):
             input = (
                 ui.input(placeholder="Message...")
@@ -83,9 +113,10 @@ def main():
         "--api-key", help="DeepSeek API key (defaults to DEEPSEEK_API_KEY env var)"
     )
     parser.add_argument("--model", default="deepseek-chat", help="OpenAI model to use")
+    parser.add_argument("--history-file", default="chat_history.json", help="File to store chat history")
     args = parser.parse_args()
 
-    chat_ui(api_key=args.api_key, model=args.model)
+    chat_ui(api_key=args.api_key, model=args.model, history_file=args.history_file)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
