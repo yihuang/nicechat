@@ -155,16 +155,13 @@ def main():
     parser.add_argument(
         "--native", action="store_true", help="Run in native desktop window mode"
     )
-    parser.add_argument(
-        "--dark", action="store_true", help="Enable dark mode"
-    )
+    parser.add_argument("--dark", action="store_true", help="Enable dark mode")
     args = parser.parse_args()
 
     llm_client = LLMClient(
         api_key=args.api_key,
         model=args.model,
         history_file=args.history_file,
-        dark_mode=args.dark
     )
     chat_ui(llm_client, args.native, args.dark)
 

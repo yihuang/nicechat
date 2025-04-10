@@ -28,7 +28,6 @@ class LLMClient:
         model: str = "deepseek-chat",
         history_file: str = "chat_history.json",
         provider: Provider = Provider.DEEPSEEK,
-        dark_mode: bool = False,
     ):
         """Initialize the LLM client.
 
