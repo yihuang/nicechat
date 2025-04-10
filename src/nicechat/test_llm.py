@@ -18,7 +18,12 @@ async def test_llm(api_key: str = None, model: str = "deepseek-chat"):
     
     while True:
         try:
-            message = input("> ").strip()
+            try:
+                message = input("> ").strip()
+            except EOFError:  # Handle Ctrl+D
+                print("\nGoodbye!")
+                break
+                
             if not message:
                 continue
             if message.lower() in ('/quit', '/exit', '/q'):
