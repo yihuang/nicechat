@@ -78,7 +78,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
             width = "max-w-[80%]" if role == "user" else "w-full"
 
             with ui.row().classes(f"w-full {alignment} mb-2"):
-                with ui.column().classes(f"{bg_color} rounded-lg p-3 {width}"):
+                with ui.column().classes(f"{bg_color} rounded-lg p-3 {width} gap-0"):
                     with ui.row().classes("items-center justify-between gap-4"):
                         ui.label(sender).classes("text-xs text-gray-500")
                         if timestamp:
