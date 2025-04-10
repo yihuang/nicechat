@@ -2,6 +2,7 @@
 name = "nicechat"
 version = "0.1.0"
 description = "An llm chat gui"
+repository = "https://github.com/yihuang/nicechat"
 authors = [
     {name = "HuangYi", email = "yi.codeplayer@gmail.com"},
 ]
