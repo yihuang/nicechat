@@ -1,6 +1,6 @@
 """LLM interaction module - handles all OpenAI API communication."""
 
-from openai import OpenAI, AuthenticationError
+from openai import AsyncOpenAI, AuthenticationError
 
 class LLMClient:
     """Handles LLM interactions and maintains conversation state."""
@@ -14,7 +14,7 @@ class LLMClient:
         """
         import os
         api_key = api_key or os.getenv('DEEPSEEK_API_KEY')
-        self.client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1") if api_key else None
+        self.client = AsyncOpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1") if api_key else None
         self.model = model
         self.messages = []
     
