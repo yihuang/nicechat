@@ -25,6 +25,7 @@ def chat_ui(
     api_key: str = None,
     model: str = "deepseek-chat",
     history_file: str = "chat_history.json",
+    provider: str = "deepseek",
 ):
     """Create a simple LLM chat interface.
 

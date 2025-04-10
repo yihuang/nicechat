@@ -2,12 +2,20 @@
 
 import asyncio
 
-from .llm import LLMClient
+from .llm import LLMClient, Provider
 
 
-async def test_llm(api_key: str = None, model: str = "deepseek-chat"):
+async def test_llm(
+    api_key: str = None, model: str = "deepseek-chat", provider: str = "deepseek"
+):
     """Test the LLM client with interactive input."""
-    llm = LLMClient(api_key=api_key, model=model)
+    provider_enum = {
+        "deepseek": Provider.DEEPSEEK,
+        "openai": Provider.OPENAI,
+        "anthropic": Provider.ANTHROPIC,
+    }.get(provider.lower(), Provider.DEEPSEEK)
+
+    llm = LLMClient(api_key=api_key, model=model, provider=provider_enum)
 
     def print_chunk(chunk):
         print(chunk, end="", flush=True)
@@ -68,9 +76,16 @@ def main():
     parser.add_argument(
         "--model", default="deepseek-chat", help="Model to use (default: deepseek-chat)"
     )
+    parser.add_argument(
+        "--provider",
+        default=Provider.DEEPSEEK,
+        help="Provider to use (default: deepseek)",
+    )
     args = parser.parse_args()
 
-    asyncio.run(test_llm(api_key=args.api_key, model=args.model))
+    asyncio.run(
+        test_llm(api_key=args.api_key, model=args.model, provider=args.provider)
+    )
 
 
 if __name__ == "__main__":

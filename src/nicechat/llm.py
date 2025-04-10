@@ -1,10 +1,21 @@
-"""LLM interaction module - handles all OpenAI API communication."""
+"""LLM interaction module - handles communication with multiple LLM providers."""
 
 import json
 import os
+from enum import Enum, auto
 from pathlib import Path
+from typing import Any, Dict, Optional
 
+import anthropic
 from openai import AsyncOpenAI, AuthenticationError
+
+
+class Provider(Enum):
+    """Supported LLM providers."""
+
+    DEEPSEEK = auto()
+    OPENAI = auto()
+    ANTHROPIC = auto()
 
 
 class LLMClient:
@@ -15,23 +26,43 @@ class LLMClient:
         api_key: str = None,
         model: str = "deepseek-chat",
         history_file: str = "chat_history.json",
+        provider: Provider = Provider.DEEPSEEK,
     ):
         """Initialize the LLM client.
 
         Args:
-            api_key: DeepSeek API key (optional, falls back to DEEPSEEK_API_KEY env var)
+            api_key: API key (optional, falls back to provider-specific env vars)
             model: Model to use (default: deepseek-chat)
             history_file: File to store chat history (default: chat_history.json)
+            provider: LLM provider to use (default: DEEPSEEK)
         """
-        api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
         self.history_file = Path(history_file)
-        self.client = (
-            AsyncOpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
-            if api_key
-            else None
-        )
         self.model = model
+        self.provider = provider
+        self.client = self._init_client(api_key)
         self.messages = self._load_history()
+
+    def _init_client(self, api_key: Optional[str]) -> Any:
+        """Initialize the appropriate client based on provider."""
+        api_key = api_key or os.getenv(self._get_api_key_env_var())
+        if not api_key:
+            return None
+
+        if self.provider == Provider.DEEPSEEK:
+            return AsyncOpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
+        elif self.provider == Provider.OPENAI:
+            return AsyncOpenAI(api_key=api_key)
+        elif self.provider == Provider.ANTHROPIC:
+            return anthropic.AsyncAnthropic(api_key=api_key)
+        return None
+
+    def _get_api_key_env_var(self) -> str:
+        """Get the appropriate API key environment variable name."""
+        return {
+            Provider.DEEPSEEK: "DEEPSEEK_API_KEY",
+            Provider.OPENAI: "OPENAI_API_KEY",
+            Provider.ANTHROPIC: "ANTHROPIC_API_KEY",
+        }.get(self.provider, "DEEPSEEK_API_KEY")
 
     async def send_message(self, user_message: str, callback=None) -> str:
         """Send a message to the LLM and get the response.
@@ -61,17 +92,30 @@ class LLMClient:
 
         try:
             full_reply = ""
-            # Use async for streaming
-            stream = await self.client.chat.completions.create(
-                model=self.model, messages=self.messages, stream=True
-            )
 
-            async for chunk in stream:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    chunk_content = chunk.choices[0].delta.content
-                    full_reply += chunk_content
-                    if callback:
-                        callback(chunk_content)
+            if self.provider in (Provider.DEEPSEEK, Provider.OPENAI):
+                stream = await self.client.chat.completions.create(
+                    model=self.model, messages=self.messages, stream=True
+                )
+                async for chunk in stream:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        chunk_content = chunk.choices[0].delta.content
+                        full_reply += chunk_content
+                        if callback:
+                            callback(chunk_content)
+
+            elif self.provider == Provider.ANTHROPIC:
+                async with self.client.messages.stream(
+                    model=self.model,
+                    messages=self.messages,
+                    max_tokens=4096,
+                ) as stream:
+                    async for chunk in stream:
+                        if chunk.content:
+                            chunk_content = chunk.content[0].text
+                            full_reply += chunk_content
+                            if callback:
+                                callback(chunk_content)
 
             msg = {
                 "role": "assistant",
