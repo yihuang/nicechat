@@ -29,9 +29,11 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
                 "self-end"
             )
 
-            # Show simple loading message
+            # Show simple loading message with spinner
             ui.chat_message(name="AI", sent=False).classes("self-start")
-            text = ui.label("Thinking...")
+            with ui.row().classes("items-center gap-2"):
+                text = ui.spinner(size="sm")
+                ui.label("Thinking...")
             # Create response container with markdown support
             response_text = ui.markdown("").classes("text-wrap")
 
