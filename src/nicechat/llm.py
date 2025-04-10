@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import anthropic
+import httpx
 from openai import AsyncOpenAI, AuthenticationError
 
 
@@ -116,19 +117,29 @@ class LLMClient:
                             full_reply += chunk_content
                             if callback:
                                 callback(chunk_content)
-
-            self._append_message(
-                {
-                    "role": "assistant",
-                    "content": full_reply,
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
-            return full_reply
+        except httpx.ReadError:
+            # could be cancelled by user, or network error, just keep the partial response
+            pass
         except AuthenticationError:
             return "⚠️ Invalid API key"
         except Exception as e:
             return f"⚠️ Error: {str(e)}"
+
+        self._append_message(
+            {
+                "role": "assistant",
+                "content": full_reply,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+        return full_reply
+
+    async def stop_streaming(self):
+        """Stop streaming messages from the LLM."""
+        if self.client:
+            await self.client.close()
+        else:
+            print("No active client to stop streaming.")
 
     def _append_message(self, message: dict):
         """Append a message to the chat history."""

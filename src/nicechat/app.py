@@ -45,7 +45,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False):
         native: Run in native desktop window mode (default: False)
     """
 
-    with ui.column().classes("w-full max-w-2xl mx-auto"):
+    with ui.column().classes("w-full max-w-4xl mx-auto"):
         chat_container = ui.column().classes("w-full")
         with ui.row().classes("w-full"):
             input = (
@@ -53,40 +53,59 @@ def chat_ui(llm_client: LLMClient, native: bool = False):
                 .classes("flex-grow")
                 .on("keydown.enter", lambda: send_message())
             )
-            ui.button("Send", on_click=lambda: send_message())
+            send_btn = (
+                ui.button(icon="send")
+                .props("flat dense")
+                .on("click", lambda: send_message())
+            )
+            stop_btn = (
+                ui.button(icon="stop")
+                .props("flat dense")
+                .on("click", lambda: cancel_stream())
+                .bind_visibility_from(send_btn, "visible", value=False)
+            )
 
-    def render_message(role: str, content: str, timestamp: str = None):
+    def render_message(
+        role: str, content: str, timestamp: str = None, show_spinner: bool = False
+    ):
         """Render a message in the chat UI."""
-        nonlocal chat_container
+        spinner = None
         with chat_container:
             alignment = "justify-end" if role == "user" else "justify-start"
             bg_color = "bg-blue-100" if role == "user" else "bg-gray-100"
             sender = "You" if role == "user" else "AI"
+            width = "max-w-[80%]" if role == "user" else "w-full"
 
             with ui.row().classes(f"w-full {alignment} mb-2"):
-                with ui.column().classes(f"{bg_color} rounded-lg p-3 max-w-[80%]"):
+                with ui.column().classes(f"{bg_color} rounded-lg p-3 {width}"):
                     with ui.row().classes("items-center justify-between gap-4"):
                         ui.label(sender).classes("text-xs text-gray-500")
                         if timestamp:
-                            from datetime import datetime
-
                             dt = datetime.fromisoformat(timestamp)
                             ui.label(dt.strftime("%H:%M")).classes(
                                 "text-xs text-gray-500"
                             )
-                    ui.markdown(
+                    if role == "assistant" and not content:
+                        spinner = ui.spinner(size="sm")
+                    response_text = ui.markdown(
                         content,
                         extras=MARKDOWN_EXTRAS,
-                    ).classes("text-wrap")
+                    ).classes("text-wrap w-full")
+
+        return response_text, spinner
 
     # Load and display existing chat history
     for message in llm_client.messages:
         render_message(message["role"], message["content"], message.get("timestamp"))
 
+    async def cancel_stream():
+        await llm_client.stop_streaming()
+
     async def send_message():
         if not input.value.strip():
             return
 
+        send_btn.visible = False
         user_message = input.value
         input.value = ""
 
@@ -95,37 +114,29 @@ def chat_ui(llm_client: LLMClient, native: bool = False):
             render_message("user", user_message, datetime.now().isoformat())
 
             # Show loading indicator with custom styling
-            with ui.row().classes("w-full justify-start mb-2"):
-                with ui.column().classes("bg-gray-100 rounded-lg p-3 max-w-[80%]"):
-                    ui.label("AI").classes("text-xs text-gray-500")
-                    with ui.row().classes("items-center gap-2"):
-                        loading = ui.spinner(size="sm")
-                        # Create response container with markdown support
-                        response_text = ui.markdown(
-                            "",
-                            extras=[
-                                "latex2",
-                                "fenced-code-blocks",
-                                "tables",
-                                "wavedrom",
-                            ],
-                        ).classes("text-wrap")
+            response_text, spinner = render_message(
+                "assistant", "", datetime.now().isoformat(), show_spinner=True
+            )
 
             # Define callback for streaming chunks
             def update_response(chunk):
-                nonlocal loading
-                if loading is not None:
+                nonlocal spinner
+                if spinner is not None:
                     # Clean up loading indicator
-                    loading.delete()
-                    loading = None
+                    spinner.delete()
+                    spinner = None
                 response_text.content += chunk
-                ui.update(response_text)
                 fix_scroll()
 
             # Get AI response
-            reply = await llm_client.send_message(
-                user_message, callback=update_response
-            )
+            try:
+                reply = await llm_client.send_message(
+                    user_message, callback=update_response
+                )
+            finally:
+                send_btn.visible = True
+
+            response_text.content = reply
 
     ui.run(title=f"NiceChat - {llm_client.model}", native=native)
 
