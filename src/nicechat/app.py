@@ -37,6 +37,47 @@ if (nearBottom) {
     )
 
 
+def global_style():
+    ui.add_head_html(
+        """
+    <style>
+    .markdown-body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+    }
+    .markdown-body p {
+        margin: 0.5em 0;
+    }
+    .markdown-body pre {
+        background-color: rgba(0,0,0,0.05);
+        border-radius: 6px;
+        padding: 1em;
+        overflow-x: auto;
+    }
+    .markdown-body code {
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+    .dark .markdown-body pre {
+        background-color: rgba(255,255,255,0.05);
+    }
+    .markdown-body blockquote {
+        border-left: 4px solid #ddd;
+        padding-left: 1em;
+        margin-left: 0;
+        color: #777;
+    }
+    .dark .markdown-body blockquote {
+        border-left-color: #444;
+        color: #aaa;
+    }
+    </style>
+    """
+    )
+
+
 def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False):
     """Create a simple LLM chat interface.
 
@@ -44,7 +85,8 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
         llm_client: LLMClient instance for handling API requests.
         native: Run in native desktop window mode (default: False)
     """
-
+    # Add markdown styling
+    global_style()
     ui.dark_mode(dark_mode)
     with ui.column().classes("w-full max-w-4xl mx-auto"):
         chat_container = ui.column().classes("w-full")
@@ -73,7 +115,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
         spinner = None
         with chat_container:
             alignment = "justify-end" if role == "user" else "justify-start"
-            bg_color = "bg-blue-100" if role == "user" else "bg-gray-100"
+            bg_color = "bg-blue-500/10" if role == "user" else "bg-gray-500/10"
             sender = "You" if role == "user" else "AI"
             width = "max-w-[80%]" if role == "user" else "w-full"
 
@@ -91,7 +133,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
                     response_text = ui.markdown(
                         content,
                         extras=MARKDOWN_EXTRAS,
-                    ).classes("text-wrap w-full")
+                    ).classes("text-wrap w-full markdown-body")
 
         return response_text, spinner
 
