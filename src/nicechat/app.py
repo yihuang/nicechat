@@ -26,6 +26,7 @@ def chat_ui(
     model: str = "deepseek-chat",
     history_file: str = "chat_history.json",
     provider: str = "deepseek",
+    native: bool = False,
 ):
     """Create a simple LLM chat interface.
 
@@ -123,7 +124,7 @@ def chat_ui(
                 user_message, callback=update_response
             )
 
-    ui.run(title=f"NiceChat - {model}")
+    ui.run(title=f"NiceChat - {model}", native=native)
 
 
 def main():
@@ -136,9 +137,17 @@ def main():
     parser.add_argument(
         "--history-file", default="chat_history.json", help="File to store chat history"
     )
+    parser.add_argument(
+        "--native", action="store_true", help="Run in native desktop window mode"
+    )
     args = parser.parse_args()
 
-    chat_ui(api_key=args.api_key, model=args.model, history_file=args.history_file)
+    chat_ui(
+        api_key=args.api_key,
+        model=args.model,
+        history_file=args.history_file,
+        native=args.native,
+    )
 
 
 if __name__ in {"__main__", "__mp_main__"}:

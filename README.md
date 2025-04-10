@@ -26,7 +26,11 @@ uv pip install nicechat
 
 ### Web Interface
 ```bash
+# Web interface (default)
 nicechat --api-key YOUR_API_KEY --model deepseek-chat
+
+# Native desktop window
+nicechat --api-key YOUR_API_KEY --model deepseek-chat --native
 ```
 
 ## Development

@@ -11,6 +11,7 @@ dependencies = [
     "anthropic>=0.25.0",
     "latex2mathml>=3.74.0",
     "markdown2>=2.4.10",
+    "pywebview>=5.4",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
