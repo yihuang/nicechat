@@ -24,15 +24,18 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
         input.value = ""
 
         with chat_container:
-            # Show user message immediately
-            ui.chat_message(name="You", text=user_message, sent=True).classes(
-                "self-end"
-            )
-
-            # Show simple loading message with spinner
-            ui.chat_message(name="AI", sent=False).classes("self-start")
-            with ui.row().classes("items-center gap-2"):
-                loading = ui.spinner(size="sm")
+            # Show user message with custom styling
+            with ui.row().classes("w-full justify-end mb-2"):
+                with ui.column().classes("bg-blue-100 rounded-lg p-3 max-w-[80%]"):
+                    ui.label("You").classes("text-xs text-gray-500")
+                    ui.label(user_message).classes("text-wrap")
+            
+            # Show loading indicator with custom styling
+            with ui.row().classes("w-full justify-start mb-2"):
+                with ui.column().classes("bg-gray-100 rounded-lg p-3 max-w-[80%]"):
+                    with ui.row().classes("items-center gap-2"):
+                        loading = ui.spinner(size="sm")
+                        ui.label("Thinking...").classes("text-gray-500")
             # Create response container with markdown support
             response_text = ui.markdown("").classes("text-wrap")
 
@@ -43,6 +46,14 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
                     # Clean up loading indicator
                     loading.delete()
                     text = None
+                if loading is not None:
+                    # First chunk - create AI message container
+                    loading.delete()
+                    loading = None
+                    with ui.row().classes("w-full justify-start mb-2"):
+                        with ui.column().classes("bg-gray-100 rounded-lg p-3 max-w-[80%]"):
+                            ui.label("AI").classes("text-xs text-gray-500")
+                            response_text = ui.markdown("").classes("text-wrap")
                 response_text.content += chunk
                 ui.update(response_text)
 
