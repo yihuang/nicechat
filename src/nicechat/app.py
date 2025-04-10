@@ -17,11 +17,25 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
         if not input.value.strip():
             return
             
-        with chat_container:
-            ui.chat_message(name='You', text=input.value, sent=True).classes('self-end')
-            reply = await llm_client.send_message(input.value)
-            ui.chat_message(name='AI', text=reply, sent=False).classes('self-start')
+        user_message = input.value
         input.value = ''
+        
+        with chat_container:
+            # Show user message immediately
+            ui.chat_message(name='You', text=user_message, sent=True).classes('self-end')
+            
+            # Show loading indicator
+            with ui.chat_message(name='AI', sent=False).classes('self-start'):
+                loading = ui.spinner(size='lg')
+                text = ui.label('Thinking...')
+            
+            # Get AI response
+            reply = await llm_client.send_message(user_message)
+            
+            # Replace loading with actual response
+            loading.delete()
+            text.delete()
+            ui.chat_message(name='AI', text=reply, sent=False).classes('self-start')
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
         chat_container = ui.column().classes('w-full')
