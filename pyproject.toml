@@ -14,6 +14,7 @@ readme = "README.md"
 
 [project.scripts]
 nicechat = "nicechat.app:main"
+nicechat-test-llm = "nicechat.test_llm:main"
 
 [build-system]
 requires = ["uv_build>=0.1.0"]
