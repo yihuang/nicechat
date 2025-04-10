@@ -47,7 +47,7 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
     with ui.column().classes('w-full max-w-2xl mx-auto'):
         chat_container = ui.column().classes('w-full')
         with ui.row().classes('w-full'):
-            input = ui.input(placeholder='Message...').classes('flex-grow')
+            input = ui.input(placeholder='Message...').classes('flex-grow').on('keydown.enter', lambda: send_message())
             ui.button('Send', on_click=lambda: send_message())
     
     ui.run(title=f"NiceChat - {model}")
