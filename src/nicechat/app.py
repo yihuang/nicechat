@@ -32,17 +32,16 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             # Show simple loading message with spinner
             ui.chat_message(name="AI", sent=False).classes("self-start")
             with ui.row().classes("items-center gap-2"):
-                text = ui.spinner(size="sm")
-                ui.label("Thinking...")
+                loading = ui.spinner(size="sm")
             # Create response container with markdown support
             response_text = ui.markdown("").classes("text-wrap")
 
             # Define callback for streaming chunks
             def update_response(chunk):
-                nonlocal text
-                if text is not None:
+                nonlocal loading
+                if loading is not None:
                     # Clean up loading indicator
-                    text.delete()
+                    loading.delete()
                     text = None
                 response_text.content += chunk
                 ui.update(response_text)
