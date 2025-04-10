@@ -21,21 +21,13 @@ if (nearBottom) {
     )
 
 
-def chat_ui(
-    api_key: str = None,
-    model: str = "deepseek-chat",
-    history_file: str = "chat_history.json",
-    provider: str = "deepseek",
-    native: bool = False,
-):
+def chat_ui(llm_client: LLMClient, native: bool = False):
     """Create a simple LLM chat interface.
 
     Args:
-        api_key: OpenAI API key (optional)
-        model: OpenAI model to use (default: gpt-3.5-turbo)
-        history_file: File to store chat history (default: chat_history.json)
+        llm_client: LLMClient instance for handling API requests.
+        native: Run in native desktop window mode (default: False)
     """
-    llm_client = LLMClient(api_key=api_key, model=model, history_file=history_file)
 
     with ui.column().classes("w-full max-w-2xl mx-auto"):
         chat_container = ui.column().classes("w-full")
@@ -124,7 +116,7 @@ def chat_ui(
                 user_message, callback=update_response
             )
 
-    ui.run(title=f"NiceChat - {model}", native=native)
+    ui.run(title=f"NiceChat - {llm_client.model}", native=native)
 
 
 def main():
@@ -142,12 +134,10 @@ def main():
     )
     args = parser.parse_args()
 
-    chat_ui(
-        api_key=args.api_key,
-        model=args.model,
-        history_file=args.history_file,
-        native=args.native,
+    llm_client = LLMClient(
+        api_key=args.api_key, model=args.model, history_file=args.history_file
     )
+    chat_ui(llm_client, args.native)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
