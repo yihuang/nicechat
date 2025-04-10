@@ -30,14 +30,18 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             )
 
             # Show simple loading message
-            with ui.chat_message(name="AI", sent=False).classes("self-start"):
-                text = ui.label("Thinking...")
-
+            ui.chat_message(name="AI", sent=False).classes("self-start")
+            text = ui.label("Thinking...")
             # Create response container with markdown support
             response_text = ui.markdown("").classes("text-wrap")
 
             # Define callback for streaming chunks
             def update_response(chunk):
+                nonlocal text
+                if text is not None:
+                    # Clean up loading indicator
+                    text.delete()
+                    text = None
                 response_text.content += chunk
                 ui.update(response_text)
 
@@ -45,8 +49,6 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             reply = await llm_client.send_message(
                 user_message, callback=update_response
             )
-            # Clean up loading indicator
-            text.delete()
 
     with ui.column().classes("w-full max-w-2xl mx-auto"):
         chat_container = ui.column().classes("w-full")
