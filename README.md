@@ -27,10 +27,13 @@ uv pip install nicechat
 ### Web Interface
 ```bash
 # Web interface (default)
-nicechat --api-key YOUR_API_KEY --model deepseek-chat
+nicechat
 
 # Native desktop window
-nicechat --api-key YOUR_API_KEY --model deepseek-chat --native
+nicechat --native
+
+# Specify a different file to start a new thread
+nicechat --history-file history.json
 ```
 
 ## Development
@@ -38,11 +41,5 @@ nicechat --api-key YOUR_API_KEY --model deepseek-chat --native
 ```bash
 # Setup environment
 uv venv
-uv pip install -e .[dev]
-
-# Run tests
-pytest
-
-# Run development server
-uvicorn nicechat.app:main --reload
+uv pip install -e .
 ```
