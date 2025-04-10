@@ -19,3 +19,9 @@ nicechat-test-llm = "nicechat.test_llm:main"
 [build-system]
 requires = ["uv_build>=0.1.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "black>=24.8.0",
+    "isort>=5.13.2",
+]
