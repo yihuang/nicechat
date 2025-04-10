@@ -8,6 +8,22 @@ from nicegui import ui
 from . import markdown_ext
 from .llm import LLMClient
 
+# https://github.com/trentm/python-markdown2/wiki/Extras
+MARKDOWN_EXTRAS = [
+    "latex2",
+    "fenced-code-blocks",
+    "tables",
+    "wavedrom",
+    "cuddled-lists",
+    "footnotes",
+    "pyshell",
+    "smarty-pants",
+    "strike",
+    "spoiler",
+    "task_list",
+    "target-blank-links",
+]
+
 
 def fix_scroll():
     ui.run_javascript(
@@ -60,12 +76,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False):
                             )
                     ui.markdown(
                         content,
-                        extras=[
-                            "latex2",
-                            "fenced-code-blocks",
-                            "tables",
-                            "wavedrom",
-                        ],
+                        extras=MARKDOWN_EXTRAS,
                     ).classes("text-wrap")
 
     # Load and display existing chat history
