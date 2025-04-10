@@ -16,17 +16,24 @@ async def test_llm(api_key: str = None, model: str = "deepseek-chat"):
     
     while True:
         try:
-            message = input("> ")
-            if not message.strip():
+            message = input("> ").strip()
+            if not message:
                 continue
+            if message.lower() in ('/quit', '/exit', '/q'):
+                print("Goodbye!")
+                break
                 
             print("AI: ", end='')
             response = await llm.send_message(message, callback=print_chunk)
             print("\n")
             
         except KeyboardInterrupt:
-            print("\nExiting...")
-            break
+            print("\nType /quit to exit or press Ctrl+C again to force quit")
+            try:
+                input("> ")  # Give user a chance to type /quit
+            except KeyboardInterrupt:
+                print("\nGoodbye!")
+                break
         except Exception as e:
             print(f"\nError: {e}")
 
