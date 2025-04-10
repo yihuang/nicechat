@@ -19,8 +19,7 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
             
         with chat_container:
             ui.chat_message(name='You', text=input.value, sent=True)
-        reply = await llm_client.send_message(input.value)
-        with chat_container:
+            reply = await llm_client.send_message(input.value)
             ui.chat_message(name='AI', text=reply, sent=False)
         input.value = ''
     
@@ -28,7 +27,7 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
         chat_container = ui.column().classes('w-full')
         with ui.row().classes('w-full'):
             input = ui.input(placeholder='Message...').classes('flex-grow')
-            ui.button('Send', on_click=send_message)
+            ui.button('Send', on_click=lambda: send_message())
     
     ui.run(title=f"NiceChat - {model}")
 
