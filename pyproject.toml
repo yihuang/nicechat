@@ -13,7 +13,7 @@ requires-python = ">=3.8"
 readme = "README.md"
 
 [project.scripts]
-nicechat = "nicechat:main"
+nicechat = "nicechat.app:main"
 
 [build-system]
 requires = ["uv_build>=0.1.0"]
