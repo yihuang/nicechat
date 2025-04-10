@@ -17,13 +17,15 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
         if not input.value.strip():
             return
             
-        chat_messages.add_message('You', input.value)
+        with chat_container:
+            ui.chat_message(name='You', text=input.value, sent=True)
         reply = await llm_client.send_message(input.value)
-        chat_messages.add_message('AI', reply)
+        with chat_container:
+            ui.chat_message(name='AI', text=reply, sent=False)
         input.value = ''
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
-        chat_messages = ui.chat_message().classes('w-full')
+        chat_container = ui.column().classes('w-full')
         with ui.row().classes('w-full'):
             input = ui.input(placeholder='Message...').classes('flex-grow')
             ui.button('Send', on_click=send_message)
