@@ -55,7 +55,7 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
 def main():
     """Command line interface for NiceChat."""
     parser = argparse.ArgumentParser(description='NiceChat - Simple LLM Chat UI')
-    parser.add_argument('--api-key', help='OpenAI API key')
+    parser.add_argument('--api-key', help='DeepSeek API key (defaults to DEEPSEEK_API_KEY env var)')
     parser.add_argument('--model', default='deepseek-chat',
                        help='OpenAI model to use')
     args = parser.parse_args()

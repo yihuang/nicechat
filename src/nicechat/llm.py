@@ -9,9 +9,11 @@ class LLMClient:
         """Initialize the LLM client.
         
         Args:
-            api_key: DeepSeek API key (optional)
+            api_key: DeepSeek API key (optional, falls back to DEEPSEEK_API_KEY env var)
             model: Model to use (default: deepseek-chat)
         """
+        import os
+        api_key = api_key or os.getenv('DEEPSEEK_API_KEY')
         self.client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1") if api_key else None
         self.model = model
         self.messages = []
