@@ -37,7 +37,7 @@ if (nearBottom) {
     )
 
 
-def chat_ui(llm_client: LLMClient, native: bool = False):
+def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False):
     """Create a simple LLM chat interface.
 
     Args:
@@ -45,6 +45,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False):
         native: Run in native desktop window mode (default: False)
     """
 
+    ui.dark_mode(dark_mode)
     with ui.column().classes("w-full max-w-4xl mx-auto"):
         chat_container = ui.column().classes("w-full")
         with ui.row().classes("w-full"):
@@ -154,12 +155,18 @@ def main():
     parser.add_argument(
         "--native", action="store_true", help="Run in native desktop window mode"
     )
+    parser.add_argument(
+        "--dark", action="store_true", help="Enable dark mode"
+    )
     args = parser.parse_args()
 
     llm_client = LLMClient(
-        api_key=args.api_key, model=args.model, history_file=args.history_file
+        api_key=args.api_key,
+        model=args.model,
+        history_file=args.history_file,
+        dark_mode=args.dark
     )
-    chat_ui(llm_client, args.native)
+    chat_ui(llm_client, args.native, args.dark)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
