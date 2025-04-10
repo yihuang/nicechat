@@ -1,0 +1,14 @@
+[project]
+name = "nicechat"
+version = "0.1.0"
+description = "A nice chat application"
+authors = [
+    {name = "Your Name", email = "your@email.com"},
+]
+dependencies = []
+requires-python = ">=3.8"
+readme = "README.md"
+
+[build-system]
+requires = ["uv>=0.1.0"]
+build-backend = "uv"
