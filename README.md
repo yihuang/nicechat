@@ -2,6 +2,8 @@
 
 A rich featured LLM chat UI using [NiceGUI](https://nicegui.io/) and pure python.
 
+https://github.com/user-attachments/assets/066db76c-c17d-41c5-970d-6aea1fe6f354
+
 ## Installation
 
 ```bash
