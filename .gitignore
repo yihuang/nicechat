@@ -78,3 +78,6 @@ dmypy.json
 
 # aider
 .aider*
+
+# direnv
+/.envrc
