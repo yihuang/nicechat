@@ -29,12 +29,12 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
                 loading = ui.spinner(size='lg')
                 text = ui.label('Thinking...')
             
-            # Create response container
-            response_text = ui.label('').classes('text-wrap')
+            # Create response container with markdown support
+            response_text = ui.markdown('').classes('text-wrap')
             
             # Define callback for streaming chunks
             def update_response(chunk):
-                response_text.text += chunk
+                response_text.content += chunk
                 ui.update(response_text)
             
             # Get AI response
