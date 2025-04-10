@@ -4,6 +4,7 @@ import argparse
 
 from nicegui import ui
 
+from . import markdown_ext
 from .llm import LLMClient
 
 
@@ -29,15 +30,23 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
                 with ui.column().classes("bg-blue-100 rounded-lg p-3 max-w-[80%]"):
                     ui.label("You").classes("text-xs text-gray-500")
                     ui.label(user_message).classes("text-wrap")
-            
+
             # Show loading indicator with custom styling
             with ui.row().classes("w-full justify-start mb-2"):
                 with ui.column().classes("bg-gray-100 rounded-lg p-3 max-w-[80%]"):
+                    ui.label("AI").classes("text-xs text-gray-500")
                     with ui.row().classes("items-center gap-2"):
                         loading = ui.spinner(size="sm")
-                        ui.label("Thinking...").classes("text-gray-500")
-            # Create response container with markdown support
-            response_text = ui.markdown("").classes("text-wrap")
+                        # Create response container with markdown support
+                        response_text = ui.markdown(
+                            "",
+                            extras=[
+                                "latex2",
+                                "fenced-code-blocks",
+                                "tables",
+                                "wavedrom",
+                            ],
+                        ).classes("text-wrap")
 
             # Define callback for streaming chunks
             def update_response(chunk):
@@ -45,15 +54,7 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
                 if loading is not None:
                     # Clean up loading indicator
                     loading.delete()
-                    text = None
-                if loading is not None:
-                    # First chunk - create AI message container
-                    loading.delete()
                     loading = None
-                    with ui.row().classes("w-full justify-start mb-2"):
-                        with ui.column().classes("bg-gray-100 rounded-lg p-3 max-w-[80%]"):
-                            ui.label("AI").classes("text-xs text-gray-500")
-                            response_text = ui.markdown("").classes("text-wrap")
                 response_text.content += chunk
                 ui.update(response_text)
 
