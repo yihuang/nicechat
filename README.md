@@ -1,6 +1,6 @@
 # NiceChat
 
-A simple LLM chat UI using NiceGUI.
+A rich featured LLM chat UI using [NiceGUI](https://nicegui.io/) and pure python.
 
 ## Installation
 
@@ -10,25 +10,35 @@ uv pip install nicechat
 
 ## Features
 
-- NiceGUI based interface
-- OpenAI API integration
-- Simple and clean design
+- Minimal NiceGUI based web interface
+- Markdown rendering with rich format support:
+  - LaTeX math
+  - tables
+  - wavedrom
+  - mermaid
+
+- Small code base, easy to customize
+- MCP support (TODO)
+- Persistent chat history in plain text file
+- Streaming responses
 
 ## Usage
 
-```python
-from nicechat import chat_ui
-
-# Run with your OpenAI API key
-chat_ui(api_key="your-api-key-here")
-
-# Or run without API key (will show placeholder responses)
-chat_ui()
+### Web Interface
+```bash
+nicechat --api-key YOUR_API_KEY --model deepseek-chat
 ```
 
 ## Development
 
 ```bash
+# Setup environment
 uv venv
-uv pip install -e .
+uv pip install -e .[dev]
+
+# Run tests
+pytest
+
+# Run development server
+uvicorn nicechat.app:main --reload
 ```
