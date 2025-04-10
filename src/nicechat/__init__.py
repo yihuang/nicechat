@@ -60,5 +60,5 @@ def main():
     
     chat_ui(api_key=args.api_key, model=args.model)
 
-if __name__ == '__main__':
+if __name__ in {"__main__", "__mp_main__"}:
     main()
