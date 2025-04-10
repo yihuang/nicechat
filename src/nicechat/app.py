@@ -4,7 +4,7 @@ import argparse
 from nicegui import ui
 from .llm import LLMClient
 
-def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
+def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
     """Create a simple LLM chat interface.
     
     Args:
@@ -56,7 +56,7 @@ def main():
     """Command line interface for NiceChat."""
     parser = argparse.ArgumentParser(description='NiceChat - Simple LLM Chat UI')
     parser.add_argument('--api-key', help='OpenAI API key')
-    parser.add_argument('--model', default='gpt-3.5-turbo',
+    parser.add_argument('--model', default='deepseek-chat',
                        help='OpenAI model to use')
     args = parser.parse_args()
     

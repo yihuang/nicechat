@@ -5,14 +5,14 @@ from openai import OpenAI, AuthenticationError
 class LLMClient:
     """Handles LLM interactions and maintains conversation state."""
     
-    def __init__(self, api_key: str = None, model: str = "gpt-3.5-turbo"):
+    def __init__(self, api_key: str = None, model: str = "deepseek-chat"):
         """Initialize the LLM client.
         
         Args:
-            api_key: OpenAI API key (optional)
-            model: OpenAI model to use (default: gpt-3.5-turbo)
+            api_key: DeepSeek API key (optional)
+            model: Model to use (default: deepseek-chat)
         """
-        self.client = OpenAI(api_key=api_key) if api_key else None
+        self.client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1") if api_key else None
         self.model = model
         self.messages = []
     
