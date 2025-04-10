@@ -2,7 +2,7 @@
 
 import argparse
 from nicegui import ui
-from openai import OpenAI, AuthenticationError
+from .llm import LLMClient
 
 def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
     """Create a simple LLM chat interface.
@@ -11,34 +11,16 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
         api_key: OpenAI API key (optional)
         model: OpenAI model to use (default: gpt-3.5-turbo)
     """
-    
-    client = OpenAI(api_key=api_key) if api_key else None
-    messages = []
+    llm_client = LLMClient(api_key=api_key, model=model)
     
     async def send_message():
         if not input.value.strip():
             return
             
-        messages.append({'role': 'user', 'content': input.value})
         chat_messages.add_message('You', input.value)
+        reply = await llm_client.send_message(input.value)
+        chat_messages.add_message('AI', reply)
         input.value = ''
-        
-        if not client:
-            chat_messages.add_message('AI', '⚠️ Please provide an OpenAI API key')
-            return
-            
-        try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=messages
-            )
-            reply = response.choices[0].message.content
-            messages.append({'role': 'assistant', 'content': reply})
-            chat_messages.add_message('AI', reply)
-        except AuthenticationError:
-            chat_messages.add_message('AI', '⚠️ Invalid API key')
-        except Exception as e:
-            chat_messages.add_message('AI', f'⚠️ Error: {str(e)}')
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
         chat_messages = ui.chat_message().classes('w-full')
