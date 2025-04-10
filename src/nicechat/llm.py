@@ -38,14 +38,15 @@ class LLMClient:
             
         try:
             full_reply = ""
+            # Use async for streaming
             stream = await self.client.chat.completions.create(
                 model=self.model,
                 messages=self.messages,
                 stream=True
             )
             
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
+            async for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
                     chunk_content = chunk.choices[0].delta.content
                     full_reply += chunk_content
                     if callback:
