@@ -29,13 +29,20 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
                 loading = ui.spinner(size='lg')
                 text = ui.label('Thinking...')
             
-            # Get AI response
-            reply = await llm_client.send_message(user_message)
+            # Create response container
+            response_text = ui.label('').classes('text-wrap')
             
-            # Replace loading with actual response
+            # Define callback for streaming chunks
+            def update_response(chunk):
+                response_text.text += chunk
+                ui.update(response_text)
+            
+            # Get AI response
+            reply = await llm_client.send_message(user_message, callback=update_response)
+            
+            # Clean up loading indicator
             loading.delete()
             text.delete()
-            ui.chat_message(name='AI', text=reply, sent=False).classes('self-start')
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
         chat_container = ui.column().classes('w-full')
