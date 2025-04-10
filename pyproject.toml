@@ -1,6 +1,6 @@
 [project]
 name = "nicechat"
-version = "0.1.0"
+version = "0.1.1"
 description = "An llm chat gui"
 repository = "https://github.com/yihuang/nicechat"
 authors = [
