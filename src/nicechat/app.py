@@ -18,9 +18,9 @@ def chat_ui(api_key: str = None, model: str = "gpt-3.5-turbo"):
             return
             
         with chat_container:
-            ui.chat_message(name='You', text=input.value, sent=True)
+            ui.chat_message(name='You', text=input.value, sent=True).classes('self-end')
             reply = await llm_client.send_message(input.value)
-            ui.chat_message(name='AI', text=reply, sent=False)
+            ui.chat_message(name='AI', text=reply, sent=False).classes('self-start')
         input.value = ''
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
