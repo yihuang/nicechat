@@ -12,6 +12,8 @@ async def test_llm(api_key: str = None, model: str = "deepseek-chat"):
     
     print("LLM Test Console (Ctrl+C to exit)")
     print(f"Using model: {model}")
+    if not llm.client:
+        print("⚠️ Warning: No API key provided - set DEEPSEEK_API_KEY env var or use --api-key")
     print("Type your message and press Enter:")
     
     while True:
@@ -24,8 +26,17 @@ async def test_llm(api_key: str = None, model: str = "deepseek-chat"):
                 break
                 
             print("AI: ", end='')
-            response = await llm.send_message(message, callback=print_chunk)
-            print("\n")
+            try:
+                response = await llm.send_message(message, callback=print_chunk)
+                if not response:
+                    print("\n⚠️ No response received from LLM")
+                elif isinstance(response, str) and response.startswith('⚠️'):
+                    print(f"\n{response}")
+                else:
+                    print("\n")
+            except Exception as e:
+                print(f"\n⚠️ Exception during LLM call: {str(e)}")
+                print(f"Type: {type(e).__name__}")
             
         except KeyboardInterrupt:
             print("\nType /quit to exit or press Ctrl+C again to force quit")
