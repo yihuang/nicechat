@@ -24,10 +24,9 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             # Show user message immediately
             ui.chat_message(name='You', text=user_message, sent=True).classes('self-end')
             
-            # Show loading indicator
+            # Show simple loading message
             with ui.chat_message(name='AI', sent=False).classes('self-start'):
-                loading = ui.spinner(size='lg')
-                text = ui.label('Thinking...')
+                ui.label('Thinking...')
             
             # Create response container with markdown support
             response_text = ui.markdown('').classes('text-wrap')
@@ -39,10 +38,6 @@ def chat_ui(api_key: str = None, model: str = "deepseek-chat"):
             
             # Get AI response
             reply = await llm_client.send_message(user_message, callback=update_response)
-            
-            # Clean up loading indicator
-            loading.delete()
-            text.delete()
     
     with ui.column().classes('w-full max-w-2xl mx-auto'):
         chat_container = ui.column().classes('w-full')
