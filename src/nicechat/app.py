@@ -53,6 +53,28 @@ def global_style():
         border-radius: 6px;
         padding: 1em;
         overflow-x: auto;
+        margin-bottom: 0;
+    }
+    .code-block-container {
+        position: relative;
+    }
+    .copy-button {
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        // background: rgba(0,0,0,0.1);
+        border: none;
+        border-radius: 4px;
+        padding: 0.25em;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .code-block-container:hover .copy-button {
+        opacity: 1;
+    }
+    .dark .copy-button {
+        background: rgba(255,255,255,0.1);
     }
     .markdown-body code {
         font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
