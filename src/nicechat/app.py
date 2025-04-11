@@ -56,7 +56,6 @@ def global_style():
     }
     .markdown-body code {
         font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-        padding: 0.2em 0.4em;
         border-radius: 3px;
         font-size: 0.9em;
     }
