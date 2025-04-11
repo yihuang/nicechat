@@ -28,9 +28,10 @@ MARKDOWN_EXTRAS = [
 def fix_scroll():
     ui.run_javascript(
         """
-const scrollThreshold = 100; // pixels from bottom
+const scrollThreshold = 200; // pixels from bottom
 const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - scrollThreshold;
 if (nearBottom) {
+    // scroll to bottom with smooth behavior
     window.scrollTo(0, document.body.scrollHeight);
 }
                 """
@@ -149,7 +150,7 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
                             ui.label(dt.strftime("%H:%M")).classes(
                                 "text-xs text-gray-500"
                             )
-                    if role == "assistant" and not content:
+                    if role == "assistant" and show_spinner:
                         spinner = ui.spinner(size="sm")
                     response_text = ui.markdown(
                         content,
@@ -176,11 +177,13 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
         with chat_container:
             # Show user message
             render_message("user", user_message, datetime.now().isoformat())
+            fix_scroll()  # Scroll to bottom after user message
 
             # Show loading indicator with custom styling
             response_text, spinner = render_message(
                 "assistant", "", datetime.now().isoformat(), show_spinner=True
             )
+            fix_scroll()  # Scroll to bottom after showing spinner
 
             # Define callback for streaming chunks
             def update_response(chunk):
@@ -194,13 +197,10 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
 
             # Get AI response
             try:
-                reply = await llm_client.send_message(
-                    user_message, callback=update_response
-                )
+                await llm_client.send_message(user_message, callback=update_response)
             finally:
                 send_btn.visible = True
-
-            response_text.content = reply
+                update_response("")
 
     ui.run(title=f"NiceChat - {llm_client.model}", native=native)
 
