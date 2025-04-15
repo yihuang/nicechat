@@ -11,7 +11,7 @@ from .llm import LLMClient
 # https://github.com/trentm/python-markdown2/wiki/Extras
 MARKDOWN_EXTRAS = [
     "latex2",
-    "fenced-code-blocks2",
+    "fenced-code-blocks",
     "tables",
     "wavedrom",
     "cuddled-lists",
@@ -22,6 +22,7 @@ MARKDOWN_EXTRAS = [
     "spoiler",
     "task_list",
     "target-blank-links",
+    "mermaid",
 ]
 
 
