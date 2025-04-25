@@ -5,7 +5,9 @@ from enum import Enum, auto
 from pathlib import Path
 
 import httpx
-from litellm import AuthenticationError, acompletion
+from agents import Agent, Runner
+from agents.stream_events import RawResponsesStreamEvent
+from openai.types.responses import ResponseTextDeltaEvent
 
 
 class Provider(Enum):
@@ -19,15 +21,15 @@ class Provider(Enum):
 class LLMClient:
     """Handles LLM interactions and maintains conversation state."""
 
-    def __init__(self, model: str, history_file: str = "chat_history.json"):
+    def __init__(self, agent: Agent, history_file: str = "chat_history.json"):
         """Initialize the LLM client.
 
         Args:
-            model: Model to use, in litellm format, "provider/model_name"
+            agent: Agent to run
             history_file: File to store chat history (default: chat_history.json)
         """
         self.history_file = Path(history_file)
-        self.model = model
+        self.agent = agent
         self.messages = self._load_history()
 
     async def send_message(self, user_message: str, callback=None) -> str:
@@ -55,25 +57,20 @@ class LLMClient:
 
         try:
             full_reply = ""
-
-            response = await acompletion(
-                model=self.model,
-                messages=self.messages,
-                stream=True,
-            )
-
-            async for chunk in response:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    chunk_content = chunk.choices[0].delta.content
-                    full_reply += chunk_content
-                    if callback and callback(chunk_content):
+            messages = [remove_timestamp(msg) for msg in self.messages]
+            result = Runner.run_streamed(self.agent, messages)
+            async for event in result.stream_events():
+                if isinstance(event, RawResponsesStreamEvent) and isinstance(
+                    event.data, ResponseTextDeltaEvent
+                ):
+                    full_reply += event.data.delta
+                    if callback and callback(event.data.delta):
                         break
+            full_reply = result.final_output_as(str)
         except httpx.ReadError:
             # could be cancelled by user, or network error,
             # just keep the partial response
             pass
-        except AuthenticationError:
-            return "⚠️ Invalid API key"
         except Exception as e:
             return f"⚠️ Error: {str(e)}"
 
@@ -101,10 +98,18 @@ class LLMClient:
 
     def _load_history(self):
         """Load chat history from JSONL file."""
-        try:
-            if self.history_file.exists():
-                with open(self.history_file) as f:
-                    return [json.loads(line) for line in f if line.strip()]
-        except Exception as e:
-            print(f"Warning: Failed to load chat history: {e}")
-        return []
+        return load_history(self.history_file)
+
+
+def load_history(file: Path):
+    """Load chat history from JSONL file."""
+    if file.exists():
+        with file.open() as f:
+            return [json.loads(line) for line in f if line.strip()]
+    return []
+
+
+def remove_timestamp(msg: dict) -> dict:
+    r = msg.copy()
+    r.pop("timestamp", None)
+    return r
