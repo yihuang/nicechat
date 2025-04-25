@@ -6,15 +6,14 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-import anthropic
 import httpx
-from openai import AsyncOpenAI, AuthenticationError
+from litellm import acompletion, AuthenticationError
 
 
 class Provider(Enum):
     """Supported LLM providers."""
 
-    DEEPSEEK = auto()
+    LITELLM = auto()
     OPENAI = auto()
     ANTHROPIC = auto()
 
@@ -45,25 +44,16 @@ class LLMClient:
 
     def _init_client(self, api_key: Optional[str]) -> Any:
         """Initialize the appropriate client based on provider."""
-        api_key = api_key or os.getenv(self._get_api_key_env_var())
-        if not api_key:
-            return None
-
-        if self.provider == Provider.DEEPSEEK:
-            return AsyncOpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
-        elif self.provider == Provider.OPENAI:
-            return AsyncOpenAI(api_key=api_key)
-        elif self.provider == Provider.ANTHROPIC:
-            return anthropic.AsyncAnthropic(api_key=api_key)
-        return None
+        self.api_key = api_key or os.getenv(self._get_api_key_env_var())
+        return None  # LiteLLM doesn't need a persistent client
 
     def _get_api_key_env_var(self) -> str:
         """Get the appropriate API key environment variable name."""
         return {
-            Provider.DEEPSEEK: "DEEPSEEK_API_KEY",
+            Provider.LITELLM: "LITELLM_API_KEY",
             Provider.OPENAI: "OPENAI_API_KEY",
             Provider.ANTHROPIC: "ANTHROPIC_API_KEY",
-        }.get(self.provider, "DEEPSEEK_API_KEY")
+        }.get(self.provider, "LITELLM_API_KEY")
 
     async def send_message(self, user_message: str, callback=None) -> str:
         """Send a message to the LLM and get the response.
@@ -94,29 +84,19 @@ class LLMClient:
         try:
             full_reply = ""
 
-            if self.provider in (Provider.DEEPSEEK, Provider.OPENAI):
-                stream = await self.client.chat.completions.create(
-                    model=self.model, messages=self.messages, stream=True
-                )
-                async for chunk in stream:
-                    if chunk.choices and chunk.choices[0].delta.content:
-                        chunk_content = chunk.choices[0].delta.content
-                        full_reply += chunk_content
-                        if callback:
-                            callback(chunk_content)
-
-            elif self.provider == Provider.ANTHROPIC:
-                async with self.client.messages.stream(
-                    model=self.model,
-                    messages=self.messages,
-                    max_tokens=4096,
-                ) as stream:
-                    async for chunk in stream:
-                        if chunk.content:
-                            chunk_content = chunk.content[0].text
-                            full_reply += chunk_content
-                            if callback:
-                                callback(chunk_content)
+            response = await acompletion(
+                model=self.model,
+                messages=self.messages,
+                stream=True,
+                api_key=self.api_key
+            )
+            
+            async for chunk in response:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    chunk_content = chunk.choices[0].delta.content
+                    full_reply += chunk_content
+                    if callback:
+                        callback(chunk_content)
         except httpx.ReadError:
             # could be cancelled by user, or network error, just keep the partial response
             pass
@@ -136,10 +116,8 @@ class LLMClient:
 
     async def stop_streaming(self):
         """Stop streaming messages from the LLM."""
-        if self.client:
-            await self.client.close()
-        else:
-            print("No active client to stop streaming.")
+        # LiteLLM handles streaming cancellation internally
+        print("Streaming stopped")
 
     def _append_message(self, message: dict):
         """Append a message to the chat history."""

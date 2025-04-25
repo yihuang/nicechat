@@ -211,7 +211,7 @@ def main():
     parser.add_argument(
         "--api-key", help="DeepSeek API key (defaults to DEEPSEEK_API_KEY env var)"
     )
-    parser.add_argument("--model", default="deepseek-chat", help="OpenAI model to use")
+    parser.add_argument("--model", default="gpt-3.5-turbo", help="Model to use (default: gpt-3.5-turbo)")
     parser.add_argument(
         "--history-file", default="chat_history.json", help="File to store chat history"
     )
