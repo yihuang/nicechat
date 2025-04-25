@@ -14,7 +14,7 @@ dependencies = [
     "markdown2>=2.4.10",
     "pywebview>=5.4",
     "litellm>=1.67.2",
-    "openai-agents>=0.0.12",
+    "openai-agents>=0.0.13",
 ]
 requires-python = ">=3.10"
 readme = "README.md"

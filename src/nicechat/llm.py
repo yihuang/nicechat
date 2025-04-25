@@ -84,13 +84,14 @@ class LLMClient:
         except Exception as e:
             return f"⚠️ Error: {str(e)}"
 
-        self._append_message(
-            {
-                "role": "assistant",
-                "content": full_reply,
-                "timestamp": datetime.now().isoformat(),
-            }
-        )
+        if full_reply:
+            self._append_message(
+                {
+                    "role": "assistant",
+                    "content": full_reply,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
         return full_reply
 
     def _append_message(self, message: dict):
