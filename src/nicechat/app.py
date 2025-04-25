@@ -210,7 +210,7 @@ def chat_ui(llm_client: LLMClient):
                 update_response("")
 
 
-def main():
+def main(reload=False):
     """Command line interface for NiceChat."""
     parser = argparse.ArgumentParser(description="NiceChat - Simple LLM Chat UI")
     parser.add_argument(
@@ -236,7 +236,8 @@ def main():
     llm_client = LLMClient(agent, args.history_file)
     ui.dark_mode(args.dark)
     chat_ui(llm_client)
-    ui.run(title=f"NiceChat - {args.model}", native=args.native)
+    ui.run(title=f"NiceChat - {args.model}", native=args.native, reload=reload)
 
 
-main()
+if __name__ in {"__main__", "__mp_main__"}:
+    main(True)

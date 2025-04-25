@@ -66,7 +66,9 @@ class LLMClient:
                     full_reply += event.data.delta
                     if callback and callback(event.data.delta):
                         break
-            full_reply = result.final_output_as(str)
+            final_output = result.final_output_as(str)
+            if final_output:
+                full_reply = final_output
         except httpx.ReadError:
             # could be cancelled by user, or network error,
             # just keep the partial response
