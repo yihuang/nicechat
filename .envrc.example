@@ -1,0 +1,4 @@
+use nix -p python312Full uv
+export VIRTUAL_ENV=."venv"
+layout python3
+export TMPDIR=/tmp
