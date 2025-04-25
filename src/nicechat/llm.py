@@ -3,15 +3,44 @@
 import json
 from enum import Enum, auto
 from pathlib import Path
+from typing import Any
 
 import httpx
 from agents import Agent, Runner
 from agents.stream_events import RawResponsesStreamEvent
 from agents.tracing import set_trace_processors
-from agents.tracing.processors import BatchTraceProcessor, ConsoleSpanExporter
+from agents.tracing.processors import (BatchTraceProcessor,
+                                       ConsoleSpanExporter, TracingExporter)
+from agents.tracing.spans import Span
+from agents.tracing.traces import Trace
 from openai.types.responses import ResponseTextDeltaEvent
 
-set_trace_processors([BatchTraceProcessor(ConsoleSpanExporter())])
+
+class FileSpanExporter(TracingExporter):
+    """Simple span exporter that writes to a JSONL file."""
+
+    def __init__(self, file_path: str):
+        self.file_path = Path(file_path)
+        self.file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def export(self, items: list[Trace | Span[Any]]):
+        """Export spans to file."""
+        try:
+            with open(self.file_path, "a") as f:
+                for item in items:
+                    f.write(json.dumps(item.export()) + "\n")
+        except Exception as e:
+            print(f"Warning: Failed to export trace: {e}")
+
+
+def configure_tracing(tracing: str, trace_file: str):
+    """Configure tracing processors based on tracing mode."""
+    processors = []
+    if tracing == "console":
+        processors.append(BatchTraceProcessor(ConsoleSpanExporter()))
+    elif tracing == "file":
+        processors.append(BatchTraceProcessor(FileSpanExporter(trace_file)))
+    set_trace_processors(processors)
 
 
 class Provider(Enum):

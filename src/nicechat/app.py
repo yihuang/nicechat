@@ -6,7 +6,7 @@ from datetime import datetime
 from nicegui import ui
 
 from . import markdown_ext  # noqa
-from .llm import LLMClient
+from .llm import LLMClient, configure_tracing
 
 # https://github.com/trentm/python-markdown2/wiki/Extras
 MARKDOWN_EXTRAS = [
@@ -225,8 +225,20 @@ def main(reload=False):
         "--native", action="store_true", help="Run in native desktop window mode"
     )
     parser.add_argument("--dark", action="store_true", help="Enable dark mode")
+    parser.add_argument(
+        "--tracing",
+        choices=["none", "console", "file"],
+        default="none",
+        help="Enable tracing (none|console|file)",
+    )
+    parser.add_argument(
+        "--trace-file",
+        default="chat_trace.jsonl",
+        help="File to write traces to when using --tracing=file",
+    )
     args = parser.parse_args()
 
+    configure_tracing(args.tracing, args.trace_file)
     llm_client = LLMClient(args.model, args.history_file)
     ui.dark_mode(args.dark)
     chat_ui(llm_client)
