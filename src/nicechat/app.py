@@ -3,7 +3,6 @@
 import argparse
 from datetime import datetime
 
-from agents import Agent
 from nicegui import ui
 
 from . import markdown_ext  # noqa
@@ -228,12 +227,7 @@ def main(reload=False):
     parser.add_argument("--dark", action="store_true", help="Enable dark mode")
     args = parser.parse_args()
 
-    agent = Agent(
-        name="nicechat",
-        instructions='"Answer the user\'s questions as best as you can."',
-        model=f"litellm/{args.model}",
-    )
-    llm_client = LLMClient(agent, args.history_file)
+    llm_client = LLMClient(args.model, args.history_file)
     ui.dark_mode(args.dark)
     chat_ui(llm_client)
     ui.run(title=f"NiceChat - {args.model}", native=args.native, reload=reload)

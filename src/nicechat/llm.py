@@ -7,7 +7,11 @@ from pathlib import Path
 import httpx
 from agents import Agent, Runner
 from agents.stream_events import RawResponsesStreamEvent
+from agents.tracing import set_trace_processors
+from agents.tracing.processors import BatchTraceProcessor, ConsoleSpanExporter
 from openai.types.responses import ResponseTextDeltaEvent
+
+set_trace_processors([BatchTraceProcessor(ConsoleSpanExporter())])
 
 
 class Provider(Enum):
@@ -21,15 +25,19 @@ class Provider(Enum):
 class LLMClient:
     """Handles LLM interactions and maintains conversation state."""
 
-    def __init__(self, agent: Agent, history_file: str = "chat_history.json"):
+    def __init__(self, model: str, history_file: str = "chat_history.json"):
         """Initialize the LLM client.
 
         Args:
-            agent: Agent to run
+            model: Model to use, in litellm format, "provider/model_name"
             history_file: File to store chat history (default: chat_history.json)
         """
+        self.agent = Agent(
+            name="nicechat",
+            instructions="Answer the user's questions as best as you can.",
+            model=f"litellm/{model}",
+        )
         self.history_file = Path(history_file)
-        self.agent = agent
         self.messages = self._load_history()
 
     async def send_message(self, user_message: str, callback=None) -> str:
