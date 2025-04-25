@@ -60,7 +60,7 @@ def global_style():
     .code-block-container {
         position: relative;
     }
-    .copy-button {
+    .code-buttons {
         position: absolute;
         top: 0.5em;
         right: 0.5em;
@@ -72,10 +72,10 @@ def global_style():
         opacity: 0;
         transition: opacity 0.2s;
     }
-    .code-block-container:hover .copy-button {
+    .code-block-container:hover .code-buttons {
         opacity: 1;
     }
-    .dark .copy-button {
+    .dark .code-buttons {
         background: rgba(255,255,255,0.1);
     }
     .markdown-body code {
