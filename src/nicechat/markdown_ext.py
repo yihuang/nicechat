@@ -1,6 +1,6 @@
 import re
 
-from markdown2 import Extra, FencedCodeBlocks, Latex, Stage
+from markdown2 import FencedCodeBlocks, Latex
 
 
 class Latex2(Latex):
@@ -62,7 +62,7 @@ setTimeout(() => toast.remove(), 1000);
 </svg>
 </button>
 </div>
-"""
+"""  # noqa
 
 
 FencedCodeBlocks.fenced_code_block_re = re.compile(
@@ -71,7 +71,7 @@ FencedCodeBlocks.fenced_code_block_re = re.compile(
         (^[ \t]*`{3,})\s{0,99}?([\w+-]+)?\s{0,99}?\n  # $1 = opening fence (captured for back-referencing), $2 = optional lang
         (.*?)                             # $3 = code block content
         (\1[ \t]*\n|\Z)                      # closing fence or EOF
-        """,
+        """,  # noqa
     re.M | re.X | re.S,
 )
 FencedCodeBlocks._code_block_with_lexer_sub = _code_block_with_lexer_sub

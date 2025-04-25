@@ -5,7 +5,7 @@ from datetime import datetime
 
 from nicegui import ui
 
-from . import markdown_ext
+from . import markdown_ext  # noqa
 from .llm import LLMClient
 
 # https://github.com/trentm/python-markdown2/wiki/Extras
@@ -35,7 +35,7 @@ if (nearBottom) {
     // scroll to bottom with smooth behavior
     window.scrollTo(0, document.body.scrollHeight);
 }
-                """
+                """  # noqa
     )
 
 
@@ -97,7 +97,7 @@ def global_style():
         color: #aaa;
     }
     </style>
-    """
+    """  # noqa
     )
 
 
@@ -122,7 +122,7 @@ def chat_ui(llm_client: LLMClient):
                 .props("flat dense")
                 .on("click", lambda: send_message())
             )
-            stop_btn = (
+            (
                 ui.button(icon="stop")
                 .props("flat dense")
                 .on("click", lambda: cancel_stream())
@@ -215,7 +215,8 @@ def main():
     parser.add_argument(
         "--model",
         default="deepseek/deepseek-chat",
-        help='Model to use, in litellm format, "provider/model_name", (default: deepseek/deepseek-chat)',
+        help='Model to use, in litellm format, "provider/model_name", '
+        "(default: deepseek/deepseek-chat)",
     )
     parser.add_argument(
         "--history-file", default="chat_history.json", help="File to store chat history"

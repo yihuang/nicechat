@@ -1,10 +1,8 @@
 """LLM interaction module - handles communication with multiple LLM providers."""
 
 import json
-import os
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 import httpx
 from litellm import AuthenticationError, acompletion
@@ -71,7 +69,8 @@ class LLMClient:
                     if callback and callback(chunk_content):
                         break
         except httpx.ReadError:
-            # could be cancelled by user, or network error, just keep the partial response
+            # could be cancelled by user, or network error,
+            # just keep the partial response
             pass
         except AuthenticationError:
             return "⚠️ Invalid API key"
