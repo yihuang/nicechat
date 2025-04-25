@@ -100,16 +100,14 @@ def global_style():
     )
 
 
-def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False):
+def chat_ui(llm_client: LLMClient):
     """Create a simple LLM chat interface.
 
     Args:
         llm_client: LLMClient instance for handling API requests.
-        native: Run in native desktop window mode (default: False)
     """
     # Add markdown styling
     global_style()
-    ui.dark_mode(dark_mode)
     with ui.column().classes("w-full max-w-4xl mx-auto"):
         chat_container = ui.column().classes("w-full")
         with ui.row().classes("w-full"):
@@ -163,16 +161,21 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
     for message in llm_client.messages:
         render_message(message["role"], message["content"], message.get("timestamp"))
 
+    stream_stopped = False
+
     async def cancel_stream():
-        await llm_client.stop_streaming()
+        nonlocal stream_stopped
+        stream_stopped = True
 
     async def send_message():
+        nonlocal stream_stopped
         if not input.value.strip():
             return
 
         send_btn.visible = False
         user_message = input.value
         input.value = ""
+        stream_stopped = False
 
         with chat_container:
             # Show user message
@@ -195,6 +198,8 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
                 response_text.content += chunk
                 fix_scroll()
 
+                return stream_stopped
+
             # Get AI response
             try:
                 await llm_client.send_message(user_message, callback=update_response)
@@ -202,16 +207,15 @@ def chat_ui(llm_client: LLMClient, native: bool = False, dark_mode: bool = False
                 send_btn.visible = True
                 update_response("")
 
-    ui.run(title=f"NiceChat - {llm_client.model}", native=native)
-
 
 def main():
     """Command line interface for NiceChat."""
     parser = argparse.ArgumentParser(description="NiceChat - Simple LLM Chat UI")
     parser.add_argument(
-        "--api-key", help="DeepSeek API key (defaults to DEEPSEEK_API_KEY env var)"
+        "--model",
+        default="deepseek/deepseek-chat",
+        help='Model to use, in litellm format, "provider/model_name", (default: deepseek/deepseek-chat)',
     )
-    parser.add_argument("--model", default="gpt-3.5-turbo", help="Model to use (default: gpt-3.5-turbo)")
     parser.add_argument(
         "--history-file", default="chat_history.json", help="File to store chat history"
     )
@@ -221,13 +225,10 @@ def main():
     parser.add_argument("--dark", action="store_true", help="Enable dark mode")
     args = parser.parse_args()
 
-    llm_client = LLMClient(
-        api_key=args.api_key,
-        model=args.model,
-        history_file=args.history_file,
-    )
-    chat_ui(llm_client, args.native, args.dark)
+    llm_client = LLMClient(args.model, args.history_file)
+    ui.dark_mode(args.dark)
+    chat_ui(llm_client)
+    ui.run(title=f"NiceChat - {llm_client.model}", native=args.native)
 
 
-if __name__ in {"__main__", "__mp_main__"}:
-    main()
+main()

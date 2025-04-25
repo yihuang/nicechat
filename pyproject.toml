@@ -7,12 +7,13 @@ authors = [
     {name = "HuangYi", email = "yi.codeplayer@gmail.com"},
 ]
 dependencies = [
-    "nicegui>=1.4.21",
+    "nicegui>=2.15.0",
     "openai>=1.12.0",
     "anthropic>=0.25.0",
     "latex2mathml>=3.74.0",
     "markdown2>=2.4.10",
     "pywebview>=5.4",
+    "litellm>=1.67.2",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

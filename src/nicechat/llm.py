@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import httpx
-from litellm import acompletion, AuthenticationError
+from litellm import AuthenticationError, acompletion
 
 
 class Provider(Enum):
@@ -21,39 +21,16 @@ class Provider(Enum):
 class LLMClient:
     """Handles LLM interactions and maintains conversation state."""
 
-    def __init__(
-        self,
-        api_key: str = None,
-        model: str = "deepseek-chat",
-        history_file: str = "chat_history.json",
-        provider: Provider = Provider.DEEPSEEK,
-    ):
+    def __init__(self, model: str, history_file: str = "chat_history.json"):
         """Initialize the LLM client.
 
         Args:
-            api_key: API key (optional, falls back to provider-specific env vars)
-            model: Model to use (default: deepseek-chat)
+            model: Model to use, in litellm format, "provider/model_name"
             history_file: File to store chat history (default: chat_history.json)
-            provider: LLM provider to use (default: DEEPSEEK)
         """
         self.history_file = Path(history_file)
         self.model = model
-        self.provider = provider
-        self.client = self._init_client(api_key)
         self.messages = self._load_history()
-
-    def _init_client(self, api_key: Optional[str]) -> Any:
-        """Initialize the appropriate client based on provider."""
-        self.api_key = api_key or os.getenv(self._get_api_key_env_var())
-        return None  # LiteLLM doesn't need a persistent client
-
-    def _get_api_key_env_var(self) -> str:
-        """Get the appropriate API key environment variable name."""
-        return {
-            Provider.LITELLM: "LITELLM_API_KEY",
-            Provider.OPENAI: "OPENAI_API_KEY",
-            Provider.ANTHROPIC: "ANTHROPIC_API_KEY",
-        }.get(self.provider, "LITELLM_API_KEY")
 
     async def send_message(self, user_message: str, callback=None) -> str:
         """Send a message to the LLM and get the response.
@@ -78,9 +55,6 @@ class LLMClient:
             }
         )
 
-        if not self.client:
-            return "⚠️ Please provide an OpenAI API key"
-
         try:
             full_reply = ""
 
@@ -88,15 +62,14 @@ class LLMClient:
                 model=self.model,
                 messages=self.messages,
                 stream=True,
-                api_key=self.api_key
             )
-            
+
             async for chunk in response:
                 if chunk.choices and chunk.choices[0].delta.content:
                     chunk_content = chunk.choices[0].delta.content
                     full_reply += chunk_content
-                    if callback:
-                        callback(chunk_content)
+                    if callback and callback(chunk_content):
+                        break
         except httpx.ReadError:
             # could be cancelled by user, or network error, just keep the partial response
             pass
@@ -113,11 +86,6 @@ class LLMClient:
             }
         )
         return full_reply
-
-    async def stop_streaming(self):
-        """Stop streaming messages from the LLM."""
-        # LiteLLM handles streaming cancellation internally
-        print("Streaming stopped")
 
     def _append_message(self, message: dict):
         """Append a message to the chat history."""
